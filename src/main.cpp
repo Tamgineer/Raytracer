@@ -2,6 +2,9 @@
 #include <fstream>
 #include <sstream>
 
+#include "vec3.h"
+#include "color.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "../ThirdParty/stb/stb_image.h"
 
@@ -25,16 +28,8 @@ int main() {
     for (int j = height - 1; j >= 0; --j) {
         std::clog << "\rScanlines remaining: " << (height - j) << ' ' << std::flush;
         for (int i = 0; i < width; ++i) {
-            float r = (float)i / (float)width;
-            float g = (float)j / (float)height;
-            float b = 0.2f;
-            int ir = int(255.99 * r);
-            int ig = int(255.99 * g);
-            int ib = int(255.99 * b);
-
-            pixels[index++] = ir;
-            pixels[index++] = ig;
-            pixels[index++] = ib;
+            color pixel_color = color(double(i)/(width-1), double(j)/(height-1), 0);
+            write_color(pixels, index, pixel_color);
         }
     }
     
