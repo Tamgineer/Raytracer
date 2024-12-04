@@ -78,7 +78,7 @@ int main() {
 
     //render
     int index = 0;
-    for (int j = height - 1; j >= 0; --j) {
+    for (int j = 0; j < height; j++) {
         std::clog << "\rScanlines remaining: " << (height - j) << ' ' << std::flush;
         for (int i = 0; i < width; ++i) {
             auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
