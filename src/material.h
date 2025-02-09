@@ -7,7 +7,11 @@ class material {
     virtual ~material() = default;
 
     virtual bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const {
-        return false;
+      return false;
+    }
+
+    virtual bool unlitten(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const {
+      return false;
     }
 };
 
@@ -96,14 +100,28 @@ class unlit : public material {
   public:
   unlit(const color& albedo) : albedo(albedo){}
 
-  bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
-    auto scatter_direction = rec.normal;
+  //bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
+    //auto scatter_direction = rec.normal;
 
-    scattered = ray(rec.p, -scatter_direction);
+    //scattered = ray(rec.p, -scatter_direction);
+    //attenuation = albedo;
+    //return false; 
+  //}
+
+  bool unlitten(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
     attenuation = albedo;
-    return false; 
+    return true;
   }
 
   private:
   color albedo;
+};
+
+class normalMat : public material {
+  public:
+  normalMat(){}
+  bool unlitten(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
+    attenuation = rec.normal;
+    return true;
+  }
 };
