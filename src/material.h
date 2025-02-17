@@ -10,7 +10,7 @@ class material {
       return false;
     }
 
-    virtual bool unlitten(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const {
+    virtual bool rgb(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const {
       return false;
     }
 };
@@ -108,7 +108,7 @@ class unlit : public material {
     //return false; 
   //}
 
-  bool unlitten(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
+  bool rgb(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
     attenuation = albedo;
     return true;
   }
@@ -120,8 +120,27 @@ class unlit : public material {
 class normalMat : public material {
   public:
   normalMat(){}
-  bool unlitten(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
+  bool rgb(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
     attenuation = rec.normal;
     return true;
   }
+};
+
+class depthMat : public material {
+  public:
+  depthMat(){}
+  bool rgb(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
+    //double z = (2.0 * near * far) / (far + near - (z * 2.0 - 1.0) * (far - near));
+    double z = slope * (rec.z - near);
+    //z = (1/z - 1/near)/(1/far - 1/near); //attempt non linear depth later on
+    z = std::fabs(z);
+    attenuation = vec3(z);
+    return true;
+  }
+
+  private:
+  double near = 0.1;
+  double far = 100;
+  double slope = (1 - 0) / (near - far);
+
 };

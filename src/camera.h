@@ -57,6 +57,7 @@ class camera {
         // if CHANNEL_NUM is 4, you can use alpha channel in png
         stbi_write_png("image.png", width, height, CHANNEL_NUM, pixels, width * CHANNEL_NUM);
 
+        //note: make a way to delete pixels when deleting camera
         delete[] pixels;
 
     }
@@ -119,11 +120,13 @@ class camera {
 
         hit_record rec;
         if (world.hit(r, interval(0.001, infinity), rec)) {
+            //calculate depth here cba
+            rec.z = vec3(lookfrom - rec.p).length();
             ray scattered;
             color attenuation;
             if (rec.mat->scatter(r, rec, attenuation, scattered)){
                 return attenuation * ray_color(scattered, depth-1, world);
-            } else if(rec.mat->unlitten(r, rec, attenuation, scattered)){
+            } else if(rec.mat->rgb(r, rec, attenuation, scattered)){
                 return attenuation;
             }
             return color(0,0,0);

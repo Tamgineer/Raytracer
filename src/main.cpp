@@ -15,16 +15,17 @@ int main() {
 
     hittable_list world;
 
-    auto ground_material = std::make_shared<unlit>(color(0.5, 0.5, 0.5));
-    world.add(std::make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
+    //auto ground_material = std::make_shared<unlit>(color(0.5, 0.5, 0.5));
+    
+    auto material1 = std::make_shared<depthMat>();
+    world.add(std::make_shared<sphere>(point3(0,-1000,0), 1000, material1));
 
-    auto material1 = std::make_shared<normalMat>();
     world.add(std::make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
  
     camera cam;
 
     cam.aspect_ratio      = 16.0 / 9.0;
-    cam.width             = 1980;
+    cam.width             = 720;
     cam.samples_per_pixel = 50;
     cam.max_depth         = 50;
 

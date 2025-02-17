@@ -34,7 +34,7 @@ class sphere : public hittable {
         vec3 outward_normal = (rec.p - center) / radius;
         rec.set_face_normal(r, outward_normal);
         rec.mat = mat;
-
+        rec.z = 0.0; //give arbitrary number for now
         return true;
     }
 
