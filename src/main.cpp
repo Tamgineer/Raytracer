@@ -15,7 +15,8 @@
 
 enum scene {
         bouncing_spheres,
-        checkered_spheres
+        checkered_spheres,
+        textured_sphere
     };
 
 void bouncingSpheres() {
@@ -108,11 +109,34 @@ void checkeredSpheres() {
     cam.render(world);
 }
 
+void texturedSphere() {
+    auto sphere_texture = std::make_shared<image_texture>("images/avatar.png");
+    auto sphere_surface = std::make_shared<lambertian>(sphere_texture);
+    auto globe = std::make_shared<sphere>(point3(0,0,0), 2, sphere_surface);
+
+    camera cam;
+
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.width             = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+
+    cam.vfov     = 20;
+    cam.lookfrom = point3(0,0,12);
+    cam.lookat   = point3(0,0,0);
+    cam.vup      = vec3(0,1,0);
+
+    cam.defocus_angle = 0;
+
+    cam.render(hittable_list(globe));
+}
+
 int main() { 
 
-    switch (checkered_spheres) {
+    switch (textured_sphere) {
         case bouncing_spheres  : bouncingSpheres();  break;
         case checkered_spheres : checkeredSpheres(); break;
+        case textured_sphere   : texturedSphere();   break;
     }
     
     return 0;

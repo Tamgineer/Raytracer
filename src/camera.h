@@ -3,11 +3,14 @@
 #include "hittable.h"
 #include "material.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "../ThirdParty/stb/stb_image.h"
+#ifdef _MSC_VER
+    #define STBI_MSC_SECURE_CRT //use only for visual studio
+#endif
 
-//#define STBI_MSC_SECURE_CRT //use only for visual studio
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+
+//#include "../ThirdParty/stb/stb_image.h"
+
 #include "../ThirdParty/stb/stb_image_write.h"
 
 
