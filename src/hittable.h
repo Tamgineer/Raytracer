@@ -12,6 +12,8 @@ class hit_record {
     std::shared_ptr<material> mat;
     double z; // depth relative from camera
     double t;
+    double u;
+    double v;
     bool front_face;
 
     void set_face_normal(const ray& r, const vec3& outward_normal) {
