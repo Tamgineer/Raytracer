@@ -8,6 +8,7 @@
 #include "hittable_list.h"
 #include "material.h"
 #include "sphere.h"
+#include "quad.h"
 #include "bvh.h"
 #include "texture.h"
 
@@ -16,7 +17,8 @@
 enum scene {
         bouncing_spheres,
         checkered_spheres,
-        textured_sphere
+        textured_sphere,
+        untextures_planes
     };
 
 void bouncingSpheres() {
@@ -110,7 +112,7 @@ void checkeredSpheres() {
 }
 
 void texturedSphere() {
-    auto sphere_texture = std::make_shared<image_texture>("images/avatar.png");
+    auto sphere_texture = std::make_shared<image_texture>("images/ball3.png");
     auto sphere_surface = std::make_shared<lambertian>(sphere_texture);
     auto globe = std::make_shared<sphere>(point3(0,0,0), 2, sphere_surface);
 
@@ -131,12 +133,46 @@ void texturedSphere() {
     cam.render(hittable_list(globe));
 }
 
+void planes() {
+    hittable_list world;
+
+    // Materials
+    auto left_red     = std::make_shared<lambertian>(color(1.0, 0.2, 0.2));
+    auto back_green   = std::make_shared<lambertian>(color(0.2, 1.0, 0.2));
+    auto right_blue   = std::make_shared<lambertian>(color(0.2, 0.2, 1.0));
+    auto upper_orange = std::make_shared<lambertian>(color(1.0, 0.5, 0.0));
+    auto lower_teal   = std::make_shared<lambertian>(color(0.2, 0.8, 0.8));
+
+    // Quads
+    world.add(std::make_shared<quad>(point3(-3,-2, 5), vec3(0, 0,-4), vec3(0, 4, 0), left_red));
+    world.add(std::make_shared<quad>(point3(-2,-2, 0), vec3(4, 0, 0), vec3(0, 4, 0), back_green));
+    world.add(std::make_shared<quad>(point3( 3,-2, 1), vec3(0, 0, 4), vec3(0, 4, 0), right_blue));
+    world.add(std::make_shared<quad>(point3(-2, 3, 1), vec3(4, 0, 0), vec3(0, 0, 4), upper_orange));
+    world.add(std::make_shared<quad>(point3(-2,-3, 5), vec3(4, 0, 0), vec3(0, 0,-4), lower_teal));
+
+    camera cam;
+
+    cam.aspect_ratio      = 1.0;
+    cam.width             = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+
+    cam.vfov     = 80;
+    cam.lookfrom = point3(0,0,9);
+    cam.lookat   = point3(0,0,0);
+    cam.vup      = vec3(0,1,0);
+
+    cam.defocus_angle = 0;
+
+    cam.render(world);
+}
 int main() { 
 
-    switch (textured_sphere) {
+    switch (untextures_planes) {
         case bouncing_spheres  : bouncingSpheres();  break;
         case checkered_spheres : checkeredSpheres(); break;
         case textured_sphere   : texturedSphere();   break;
+        case untextures_planes : planes();           break;
     }
     
     return 0;
