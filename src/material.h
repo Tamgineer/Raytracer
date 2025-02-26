@@ -3,6 +3,8 @@
 #include "hittable.h"
 #include "texture.h"
 
+#include <algorithm>
+
 class material {
     public:
     virtual ~material() = default;
@@ -98,6 +100,25 @@ class dielectric : public material {
     }
 };
 
+class mix : public material {
+  public:
+  mix(std::shared_ptr<material> a, std::shared_ptr<material> b, double val) : v(std::clamp(val, 0.0, 1.0)), matA(a), matB(b){}
+
+  bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
+    if(random_double() > v){
+      return matA->scatter(r_in, rec, attenuation, scattered);
+    } else {
+      return matB->scatter(r_in, rec, attenuation, scattered);
+    }
+  }
+
+  private:
+  double v;
+  std::shared_ptr<material> matA;
+  std::shared_ptr<material> matB;
+};
+
+//debug materials
 class transparent : public material {
   public:
   bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {

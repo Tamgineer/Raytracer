@@ -19,7 +19,8 @@ enum scene {
         checkered_spheres,
         textured_sphere,
         untextures_planes,
-        transparency_test
+        transparency_test,
+        mix_mat_test,
     };
 
 void bouncingSpheres() {
@@ -192,14 +193,44 @@ void transparency() {
     cam.render(world);
 }
 
+void mixMaterial(){
+    hittable_list world;
+
+    auto matA = std::make_shared<lambertian>(color(0, 1, 1));
+    auto matB = std::make_shared<lambertian>(color(1, 0, 1));
+
+    auto mixMat = std::make_shared<mix>(matA, matB, 0.5);
+    
+    auto checkerTex = std::make_shared<checker_texture>(0.32, color(.1), color(0.5));
+    world.add(std::make_shared<sphere>(point3(0,-1000,0), 1000, std::make_shared<lambertian>(checkerTex)));
+    world.add(std::make_shared<sphere>(point3(0,2,0), 2, mixMat));
+
+    camera cam;
+
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.width             = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+
+    cam.vfov     = 20;
+    cam.lookfrom = point3(13,2,3);
+    cam.lookat   = point3(0,0,0);
+    cam.vup      = vec3(0,1,0);
+
+    cam.defocus_angle = 0;
+
+    cam.render(world);
+}
+
 int main() { 
 
-    switch (transparency_test) {
+    switch (mix_mat_test) {
         case bouncing_spheres  : bouncingSpheres();  break;
         case checkered_spheres : checkeredSpheres(); break;
         case textured_sphere   : texturedSphere();   break;
         case untextures_planes : planes();           break;
         case transparency_test : transparency();     break;
+        case mix_mat_test      : mixMaterial();      break;
     }
     
     return 0;
