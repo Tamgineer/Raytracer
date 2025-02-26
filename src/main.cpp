@@ -18,7 +18,8 @@ enum scene {
         bouncing_spheres,
         checkered_spheres,
         textured_sphere,
-        untextures_planes
+        untextures_planes,
+        transparency_test
     };
 
 void bouncingSpheres() {
@@ -166,13 +167,39 @@ void planes() {
 
     cam.render(world);
 }
+
+void transparency() {
+    hittable_list world;
+
+    auto checkerTex = std::make_shared<checker_texture>(0.32, color(.1), color(0.5));
+    world.add(std::make_shared<sphere>(point3(0,-1000,0), 1000, std::make_shared<lambertian>(checkerTex)));
+    world.add(std::make_shared<sphere>(point3(0,2,0), 2, std::make_shared<transparent>()));
+
+    camera cam;
+
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.width             = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+
+    cam.vfov     = 20;
+    cam.lookfrom = point3(13,2,3);
+    cam.lookat   = point3(0,0,0);
+    cam.vup      = vec3(0,1,0);
+
+    cam.defocus_angle = 0;
+
+    cam.render(world);
+}
+
 int main() { 
 
-    switch (untextures_planes) {
+    switch (transparency_test) {
         case bouncing_spheres  : bouncingSpheres();  break;
         case checkered_spheres : checkeredSpheres(); break;
         case textured_sphere   : texturedSphere();   break;
         case untextures_planes : planes();           break;
+        case transparency_test : transparency();     break;
     }
     
     return 0;

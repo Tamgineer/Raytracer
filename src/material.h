@@ -98,6 +98,17 @@ class dielectric : public material {
     }
 };
 
+class transparent : public material {
+  public:
+  bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
+    attenuation = color(1.0, 1.0, 1.0);
+
+    scattered = ray(rec.p, r_in.direction(), r_in.time());
+
+    return true;
+  }
+};
+
 class unlit : public material {
   public:
   unlit(const color& albedo) : albedo(albedo){}
