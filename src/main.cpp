@@ -21,6 +21,7 @@ enum scene {
         untextures_planes,
         transparency_test,
         mix_mat_test,
+        image_transparency_test,
     };
 
 void bouncingSpheres() {
@@ -222,15 +223,45 @@ void mixMaterial(){
     cam.render(world);
 }
 
+void imageTransparencyMapping(){
+    hittable_list world;
+
+    auto imageTex   = std::make_shared<image_texture>("images/brush.png");
+
+    auto checkerTex = std::make_shared<checker_texture>(0.32, color(.1), color(0.5));
+    auto mixedTex   = std::make_shared<textureMix>(std::make_shared<transparent>(), std::make_shared<lambertian>(color(0.8, 0.7, 1)), imageTex);
+
+    world.add(std::make_shared<sphere>(point3(0,-1000,0), 1000, std::make_shared<lambertian>(checkerTex)));
+    world.add(std::make_shared<sphere>(point3(0,2,0), 2, std::make_shared<lambertian>(color(0, 1, 1))));
+    world.add(std::make_shared<quad>(point3( 3,0, 1), vec3(0, 0, 2), vec3(0, 2, 0), mixedTex));
+
+    camera cam;
+
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.width             = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+
+    cam.vfov     = 20;
+    cam.lookfrom = point3(13,2,3);
+    cam.lookat   = point3(0,0,0);
+    cam.vup      = vec3(0,1,0);
+
+    cam.defocus_angle = 0;
+
+    cam.render(world);
+}
+
 int main() { 
 
-    switch (mix_mat_test) {
-        case bouncing_spheres  : bouncingSpheres();  break;
-        case checkered_spheres : checkeredSpheres(); break;
-        case textured_sphere   : texturedSphere();   break;
-        case untextures_planes : planes();           break;
-        case transparency_test : transparency();     break;
-        case mix_mat_test      : mixMaterial();      break;
+    switch (image_transparency_test) {
+        case bouncing_spheres        : bouncingSpheres();          break;
+        case checkered_spheres       : checkeredSpheres();         break;
+        case textured_sphere         : texturedSphere();           break;
+        case untextures_planes       : planes();                   break;
+        case transparency_test       : transparency();             break;
+        case mix_mat_test            : mixMaterial();              break;
+        case image_transparency_test : imageTransparencyMapping(); break;
     }
     
     return 0;

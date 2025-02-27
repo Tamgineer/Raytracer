@@ -118,6 +118,27 @@ class mix : public material {
   std::shared_ptr<material> matB;
 };
 
+//there's probably a way more elegant way to plug in textures whilst using the same material
+//for the time being this material only accepts image textures, if we want to include noise later on, figure
+//out how is alpha determined
+class textureMix : public material {
+  public:
+  textureMix(std::shared_ptr<material> a, std::shared_ptr<material> b, std::shared_ptr<image_texture> texture) : tex(texture), matA(a), matB(b){}
+
+  bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
+    if(random_double() > tex->alpha(rec.u, rec.v, rec.p)){
+      return matA->scatter(r_in, rec, attenuation, scattered);
+    } else {
+      return matB->scatter(r_in, rec, attenuation, scattered);
+    }
+  }
+
+  private:
+  std::shared_ptr<material> matA;
+  std::shared_ptr<material> matB;
+  std::shared_ptr<image_texture> tex;
+};
+
 //debug materials
 class transparent : public material {
   public:

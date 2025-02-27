@@ -79,7 +79,7 @@ class rtw_image {
     }
 
   private:
-    const int      bytes_per_pixel = 3;
+    const int      bytes_per_pixel = 4;
     float         *fdata = nullptr;         // Linear floating point pixel data
     unsigned char *bdata = nullptr;         // Linear 8-bit pixel data
     int            image_width = 0;         // Loaded image width
