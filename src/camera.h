@@ -131,6 +131,11 @@ class camera {
         color attenuation;
         color color_from_emission = rec.mat->emitted(rec.u, rec.v, rec.p);
 
+        if(rec.mat->rgb(r, rec, attenuation, scattered)){
+            //depth = 0;
+            return attenuation;
+        }
+
         if (!rec.mat->scatter(r, rec, attenuation, scattered))
             return color_from_emission;
 

@@ -193,7 +193,8 @@ class normalMat : public material {
   public:
   normalMat(){}
   bool rgb(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
-    attenuation = rec.normal;
+    vec3 colour = vec3(std::abs(rec.normal.x()), std::abs(rec.normal.y()), std::abs(rec.normal.z()));
+    attenuation = colour;
     return true;
   }
 };
