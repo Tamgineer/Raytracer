@@ -206,14 +206,15 @@ class depthMat : public material {
     //double z = (2.0 * near * far) / (far + near - (z * 2.0 - 1.0) * (far - near));
     double z = slope * (rec.z - near);
     //z = (1/z - 1/near)/(1/far - 1/near); //attempt non linear depth later on
-    z = std::fabs(z);
+    //square to make non linear result
+    z = std::fabs(z*z);
     attenuation = vec3(z);
     return true;
   }
 
   private:
   double near = 0.1;
-  double far = 100;
-  double slope = (1 - 0) / (near - far);
+  double far = 2000;
+  double slope = 1 / (near - far);
 
 };

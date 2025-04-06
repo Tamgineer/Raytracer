@@ -23,13 +23,18 @@ class hit_record {
         front_face = dot(r.direction(), outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;
     }
+
+    void set_face_depth(const ray& r, vec3 camPos) {
+      vec3 length = p - camPos; 
+      z = length.length();
+    }
 };
 
 class hittable {
   public:
     virtual ~hittable() = default;
 
-    virtual bool hit(const ray& r, interval ray_t, hit_record& rec) const = 0;
+    virtual bool hit(const ray& r, interval ray_t, hit_record& rec, const vec3& camPos) const = 0;
 
     virtual aabb bounding_box() const = 0;
 
@@ -44,12 +49,12 @@ class translate : public hittable {
         bbox = object->bounding_box() + offset;
     }
 
-    bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
+    bool hit(const ray& r, interval ray_t, hit_record& rec, const vec3& camPos) const override {
         // Move the ray backwards by the offset
         ray offset_r(r.origin() - offset, r.direction(), r.time());
 
         // Determine whether an intersection exists along the offset ray (and if so, where)
-        if (!object->hit(offset_r, ray_t, rec))
+        if (!object->hit(offset_r, ray_t, rec, camPos))
             return false;
 
         // Move the intersection point forwards by the offset
@@ -101,7 +106,7 @@ class rotate_y : public hittable {
         bbox = aabb(min, max);
     }
 
-    bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
+    bool hit(const ray& r, interval ray_t, hit_record& rec, const vec3& camPos) const override {
 
         // Transform the ray from world space to object space.
 
@@ -121,7 +126,7 @@ class rotate_y : public hittable {
 
         // Determine whether an intersection exists in object space (and if so, where).
 
-        if (!object->hit(rotated_r, ray_t, rec))
+        if (!object->hit(rotated_r, ray_t, rec, camPos))
             return false;
 
         // Transform the intersection from object space back to world space.

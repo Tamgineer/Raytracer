@@ -124,7 +124,7 @@ class camera {
 
         hit_record rec;
         //if the world hits nothing, return background
-        if (!world.hit(r, interval(0.001, infinity), rec))
+        if (!world.hit(r, interval(0.001, infinity), rec, lookfrom))
             return background;
 
         ray scattered;

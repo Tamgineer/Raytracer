@@ -25,7 +25,7 @@ class quad : public hittable {
 
     aabb bounding_box() const override { return bbox; }
 
-    bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
+    bool hit(const ray& r, interval ray_t, hit_record& rec, const vec3& camPos) const override {
         auto denom = dot(normal, r.direction());
 
         // No hit if the ray is parallel to the plane.
@@ -51,6 +51,7 @@ class quad : public hittable {
         rec.p = intersection;
         rec.mat = mat;
         rec.set_face_normal(r, normal);
+        rec.set_face_depth(r, camPos);
 
         return true;
     }

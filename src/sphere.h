@@ -24,7 +24,7 @@ class sphere : public hittable {
         bbox = aabb(box1, box2);
       }
 
-    bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
+    bool hit(const ray& r, interval ray_t, hit_record& rec, const vec3& camPos) const override {
         point3 current_center = center.at(r.time());
         vec3 oc = current_center - r.origin();
         auto a = r.direction().length_squared();
@@ -49,9 +49,9 @@ class sphere : public hittable {
         rec.p = r.at(rec.t);
         vec3 outward_normal = (rec.p - current_center) / radius;
         rec.set_face_normal(r, outward_normal);
+        rec.set_face_depth(r, camPos);
         get_sphere_uv(outward_normal, rec.u, rec.v);
         rec.mat = mat;
-        rec.z = 0.0; //give arbitrary number for now
         return true;
     }
 

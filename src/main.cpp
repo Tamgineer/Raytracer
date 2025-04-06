@@ -335,7 +335,7 @@ void cornellBox() {
 void debug_cornellBox() {
     hittable_list world;
 
-    auto normals = std::make_shared<normalMat>();
+    auto normals = std::make_shared<depthMat>();
 
     world.add(std::make_shared<quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), normals));
     world.add(std::make_shared<quad>(point3(0,0,0), vec3(0,555,0), vec3(0,0,555), normals));
@@ -374,7 +374,7 @@ void debug_cornellBox() {
 
 int main() { 
 
-    switch (debug_cornell_box) {
+    switch (cornell_box) {
         case bouncing_spheres        : bouncingSpheres();          break;
         case checkered_spheres       : checkeredSpheres();         break;
         case textured_sphere         : texturedSphere();           break;
