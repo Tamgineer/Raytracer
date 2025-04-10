@@ -297,6 +297,8 @@ void cornellBox() {
     auto green = std::make_shared<lambertian>(color(.12, .45, .15));
     auto light = std::make_shared<diffuse_light>(color(15, 15, 15));
 
+    auto mirror = std::make_shared<metal>(color(1), 0);
+
     world.add(std::make_shared<quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), green));
     world.add(std::make_shared<quad>(point3(0,0,0), vec3(0,555,0), vec3(0,0,555), red));
     world.add(std::make_shared<quad>(point3(343, 554, 332), vec3(-130,0,0), vec3(0,0,-105), light));
@@ -304,7 +306,9 @@ void cornellBox() {
     world.add(std::make_shared<quad>(point3(555,555,555), vec3(-555,0,0), vec3(0,0,-555), white));
     world.add(std::make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), white));
 
-    std::shared_ptr<hittable> box1 = box(point3(0,0,0), point3(165,330,165), white);
+    world.add(std::make_shared<sphere>(point3(130, 50, 65), 50, white));
+
+    std::shared_ptr<hittable> box1 = box(point3(0,0,0), point3(165,330,165), mirror);
     box1 = std::make_shared<rotate_y>(box1, 15);
     box1 = std::make_shared<translate>(box1, vec3(265,0,295));
     world.add(box1);
@@ -317,7 +321,7 @@ void cornellBox() {
     camera cam;
 
     cam.aspect_ratio      = 1.0;
-    cam.width             = 600;
+    cam.width             = 300;
     cam.samples_per_pixel = 200;
     cam.max_depth         = 50;
     cam.background        = color(0,0,0);
@@ -330,12 +334,13 @@ void cornellBox() {
     cam.defocus_angle = 0;
 
     cam.render(world);
+    cam.render_buffer(world);
 }
 
 void debug_cornellBox() {
     hittable_list world;
 
-    auto normals = std::make_shared<depthMat>();
+    auto normals = std::make_shared<normalMat>();
 
     world.add(std::make_shared<quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), normals));
     world.add(std::make_shared<quad>(point3(0,0,0), vec3(0,555,0), vec3(0,0,555), normals));
@@ -343,6 +348,8 @@ void debug_cornellBox() {
     world.add(std::make_shared<quad>(point3(0,0,0), vec3(555,0,0), vec3(0,0,555), normals));
     world.add(std::make_shared<quad>(point3(555,555,555), vec3(-555,0,0), vec3(0,0,-555), normals));
     world.add(std::make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), normals));
+
+    world.add(std::make_shared<sphere>(point3(130, 50, 65), 50, normals));
  
     std::shared_ptr<hittable> box1 = box(point3(0,0,0), point3(165,330,165), normals);
     box1 = std::make_shared<rotate_y>(box1, 15);
@@ -369,6 +376,7 @@ void debug_cornellBox() {
 
     cam.defocus_angle = 0;
 
+    cam.render_buffer(world);
     cam.render(world);
 }
 

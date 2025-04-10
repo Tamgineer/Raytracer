@@ -17,7 +17,11 @@ class material {
         return color(0,0,0);
     }
 
-    virtual bool rgb(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const {
+    virtual bool rgb(const ray& r_in, const hit_record& rec, color& color) const {
+      return false;
+    }
+
+    virtual bool scatter_normal(const ray& r_in, const hit_record& rec, color& normals, ray& scattered) const {
       return false;
     }
 };
@@ -39,6 +43,12 @@ class lambertian : public material {
         scattered = ray(rec.p, scatter_direction, r_in.time());
         attenuation = tex->value(rec.u, rec.v, rec.p);
         return true;
+    } 
+    
+    bool scatter_normal(const ray& r_in, const hit_record& rec, color& normals, ray& scattered) const override 
+    {
+      normals = rec.normal;
+      return true;
     }
 
   private:
@@ -56,6 +66,16 @@ class metal : public material {
         reflected = unit_vector(reflected) + (fuzz * random_unit_vector());
         scattered = ray(rec.p, reflected, r_in.time());
         attenuation = albedo;
+        return (dot(scattered.direction(), rec.normal) > 0);
+    }
+
+
+    bool scatter_normal(const ray& r_in, const hit_record& rec, color& normals, ray& scattered) const override 
+    {
+        vec3 reflected = reflect(r_in.direction(), rec.normal);
+        reflected = unit_vector(reflected);
+        scattered = ray(rec.p, reflected, r_in.time());
+        normals = unit_vector(reflected);
         return (dot(scattered.direction(), rec.normal) > 0);
     }
 
@@ -111,6 +131,12 @@ class diffuse_light : public material {
 
     color emitted(double u, double v, const point3& p) const override {
         return tex->value(u, v, p);
+    }
+
+    bool scatter_normal(const ray& r_in, const hit_record& rec, color& normals, ray& scattered) const override 
+    {
+      normals = rec.normal;
+      return true;
     }
 
   private:
@@ -180,8 +206,8 @@ class unlit : public material {
     //return false; 
   //}
 
-  bool rgb(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
-    attenuation = albedo;
+  bool rgb(const ray& r_in, const hit_record& rec, color& color) const override { 
+    color = albedo;
     return true;
   }
 
@@ -192,9 +218,9 @@ class unlit : public material {
 class normalMat : public material {
   public:
   normalMat(){}
-  bool rgb(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
+  bool rgb(const ray& r_in, const hit_record& rec, color& color) const override { 
     vec3 colour = vec3(std::abs(rec.normal.x()), std::abs(rec.normal.y()), std::abs(rec.normal.z()));
-    attenuation = colour;
+    color = colour;
     return true;
   }
 };
@@ -202,13 +228,13 @@ class normalMat : public material {
 class depthMat : public material {
   public:
   depthMat(){}
-  bool rgb(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
+  bool rgb(const ray& r_in, const hit_record& rec, color& color) const override {
     //double z = (2.0 * near * far) / (far + near - (z * 2.0 - 1.0) * (far - near));
     double z = slope * (rec.z - near);
     //z = (1/z - 1/near)/(1/far - 1/near); //attempt non linear depth later on
     //square to make non linear result
     z = std::fabs(z*z);
-    attenuation = vec3(z);
+    color = vec3(z);
     return true;
   }
 
