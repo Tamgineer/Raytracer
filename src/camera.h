@@ -29,20 +29,24 @@ class camera {
     point3 lookat   = point3(0,0,-1);  // Point camera is looking at
     vec3   vup      = vec3(0,1,0);     // Camera-relative "up" direction
 
+    double outline_threshold = 0.9;    // This is the threshold which determines whether a pixel contains an edge or not
+
     double defocus_angle = 0;  // Variation angle of rays through each pixel
     double focus_dist = 10;    // Distance from camera lookfrom point to plane of perfect focus
 
     const int CHANNEL_NUM = 3;
 
-    uint8_t* normal_buffer;
     /*** NOTICE!! You have to use uint8_t array to pass in stb function  ***/
         // Because the size of color is normally 255, 8bit.
-        // If you don't use this one, you will get a weird imge.
+        // If you don't use this one, you will get a weird image.
+    uint8_t* normal_buffer; 
     uint8_t* pixels;
+    uint8_t* outline_buffer;
 
     ~camera(){
         delete[] pixels;
         delete[] normal_buffer;
+        delete[] outline_buffer;
     }
 
     void render(const hittable& world) {
@@ -72,7 +76,6 @@ class camera {
         // if CHANNEL_NUM is 4, you can use alpha channel in png
         stbi_write_png("image.png", width, height, CHANNEL_NUM, pixels, width * CHANNEL_NUM);
 
-        //note: make a way to delete pixels when deleting camera
         delete[] pixels;
 
     }
@@ -110,9 +113,89 @@ class camera {
         // if CHANNEL_NUM is 4, you can use alpha channel in png
         stbi_write_png("normal_buffer.png", width, height, 3, normal_buffer, width * 3);
 
-        //note: make a way to delete pixels when deleting camera
         delete[] normal_buffer;
 
+    }
+
+    void render_outline_buffer(const hittable& world) {
+        initialize();
+        
+        outline_buffer = new uint8_t[width * height * CHANNEL_NUM];
+
+        //render
+        int index = 0;
+ 
+        std::cout << "rendering outlines\n";
+        for (int j = 0; j < height; j++) {
+            std::clog << "\rScanlines remaining: " << (height - j) << ' ' << std::flush;
+            for (int i = 0; i < width; i++) {
+                color pixel_color(0,0,0);
+                //Hardcode the rays instead of doing it in a for loop
+	
+	            /*
+                * row major order matrix
+	            * [a1, a2, a3
+	            *  a4, a5, a6
+	            *  a7, a8, a9]
+	            *
+	            * x direction kernel
+	            * [-1, 0, +1
+	            *  -2, 0, +2
+	            *  -1, 0, +1]
+	            *
+	            *  y direction kernel
+	            *  [-1, -2, -1
+	            *    0,  0,  0
+	            *    1,  2,  1]
+	            */
+                
+                ray r1 = get_ray_by_offset(i, j, -0.5,  0.5);
+                ray r2 = get_ray_by_offset(i, j,  0  ,  0.5);
+                ray r3 = get_ray_by_offset(i, j,  0.5,  0.5);
+                ray r4 = get_ray_by_offset(i, j, -0.5,  0  );
+                ray r5 = get_ray_by_offset(i, j,  0  ,  0  );
+                ray r6 = get_ray_by_offset(i, j,  0.5,  0  );
+                ray r7 = get_ray_by_offset(i, j, -0.5, -0.5);
+                ray r8 = get_ray_by_offset(i, j,  0  , -0.5);
+                ray r9 = get_ray_by_offset(i, j,  0.5, -0.5);
+
+                color a1 = ray_normal(r1, max_depth, world);
+                color a2 = ray_normal(r2, max_depth, world);
+                color a3 = ray_normal(r3, max_depth, world);
+                color a4 = ray_normal(r4, max_depth, world);
+                color a5 = ray_normal(r5, max_depth, world);
+                color a6 = ray_normal(r6, max_depth, world);
+                color a7 = ray_normal(r7, max_depth, world);
+                color a8 = ray_normal(r8, max_depth, world);
+                color a9 = ray_normal(r9, max_depth, world);
+
+            	color x_dir = ((a1 * -1) + a3 + (a4 * -2) + (a6 * 2) + (a7 * -1) + a9); 
+            	color y_dir = ((a1 * -1) + (a2 * -2) + (a3 * -1) + a7 + (a8 * 2) + a9); 
+
+                x_dir = color(std::fabs(x_dir.x()), std::fabs(x_dir.y()), std::fabs(x_dir.z()));
+                y_dir = color(std::fabs(y_dir.x()), std::fabs(y_dir.y()), std::fabs(y_dir.z()));
+
+                color out = x_dir + y_dir;
+
+                double weight = out.length() > 0.9 ? 1 : 0;
+
+                pixel_color = color(weight);
+
+                //uncomment this to see the direction of the edge
+                //pixel_color = out * weight;
+
+                write_color(outline_buffer, index, 100 * pixel_color);
+            }
+        }
+    
+        std::clog << "\rDone...                                             \n";
+
+        // if CHANNEL_NUM is 4, you can use alpha channel in png
+        stbi_write_png("outlines.png", width, height, CHANNEL_NUM, outline_buffer, width * CHANNEL_NUM);
+
+        delete[] outline_buffer;
+
+        
     }
 
   private:
@@ -196,23 +279,24 @@ class camera {
     color ray_normal(const ray& r, int depth, const hittable& world) const {
         // If we've exceeded the ray bounce limit, no more light is gathered.
         if (depth <= 0)
-            return color(0,0,0);
+            return color(0);
 
         hit_record rec;
         //if the world hits nothing, return background
         if (!world.hit(r, interval(0.001, infinity), rec, lookfrom))
-            return rec.normal;
+            return color(0);
 
         color normal;
         ray scattered;
-        //color color_from_emission = rec.mat->emitted(rec.u, rec.v, rec.p); 
 
         if (!rec.mat->scatter_normal(r, rec, normal, scattered))
-            return normal;
+            return rec.normal;
 
         color color_from_scatter = ray_normal(scattered, depth-1, world);
 
-        return normal + color_from_scatter;
+        //normal += color_from_scatter;
+
+        return unit_vector(color_from_scatter + normal);
     }
 
     ray get_ray(int i, int j) const {
@@ -223,6 +307,21 @@ class camera {
         auto pixel_sample = pixel00_loc
                           + ((i + offset.x()) * pixel_delta_u)
                           + ((j + offset.y()) * pixel_delta_v);
+
+        auto ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();
+        auto ray_direction = pixel_sample - ray_origin;
+        auto ray_time = random_double();
+
+        return ray(ray_origin, ray_direction, ray_time);
+    }
+
+    ray get_ray_by_offset(int i, int j, double Ox, double Oy) const {
+        // Construct a camera ray originating from the origin and directed at randomly sampled
+        // point around the pixel location i, j.
+
+        auto pixel_sample = pixel00_loc
+                          + ((i + Ox) * pixel_delta_u)
+                          + ((j + Oy) * pixel_delta_v);
 
         auto ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();
         auto ray_direction = pixel_sample - ray_origin;
