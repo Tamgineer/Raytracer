@@ -244,3 +244,19 @@ class depthMat : public material {
   double slope = 1 / (near - far);
 
 };
+
+class fakeShadows : public material {
+  public:
+  //arbitrary point in space if none is defined;
+  fakeShadows(const color& albedo) : albedo(albedo), lightPos(point3(100, 100, 100)){}
+  fakeShadows(const color& albedo, const point3& lightPos) : albedo(albedo), lightPos(lightPos){}
+  
+  bool rgb(const ray& r_in, const hit_record& rec, color& color) const override {
+    color = dot(unit_vector(r_in.direction()), unit_vector(lightPos - rec.p)) > 0.7 ? albedo : albedo * 0.5;
+    return true;
+  }
+
+  private:
+  color albedo;
+  point3 lightPos;
+};
