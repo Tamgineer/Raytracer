@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hittable.h"
+#include "onb.h"
 #include "texture.h"
 
 #include <algorithm>
@@ -9,8 +10,8 @@ class material {
     public:
     virtual ~material() = default;
 
-    virtual bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const {
-      return false;
+    virtual bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered, double& pdf) const {
+        return false;
     }
 
     virtual color emitted(double u, double v, const point3& p) const {
@@ -19,7 +20,7 @@ class material {
 
     virtual double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered) const {
         return 0;
-    }
+    } 
 
     virtual bool rgb(const ray& r_in, const hit_record& rec, color& color) const {
       return false;
@@ -35,7 +36,7 @@ class lambertian : public material {
     lambertian(const color& albedo) : tex(std::make_shared<solid_color>(albedo)) {}
     lambertian(std::shared_ptr<texture> tex) : tex(tex) {}
 
-    bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered)
+    bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered, double& pdf)
     const override {
         auto scatter_direction = random_on_hemisphere(rec.normal);
         
@@ -68,7 +69,7 @@ class metal : public material {
   public:
     metal(const color& albedo, double fuzz) : albedo(albedo), fuzz(fuzz < 1 ? fuzz : 1) {}
 
-    bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered)
+    bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered, double& pdf)
     const override {
         vec3 reflected = reflect(r_in.direction(), rec.normal);
         reflected = unit_vector(reflected) + (fuzz * random_unit_vector());
@@ -96,7 +97,7 @@ class dielectric : public material {
   public:
     dielectric(double refraction_index) : refraction_index(refraction_index) {}
 
-    bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered)
+    bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered, double& pdf)
     const override {
         attenuation = color(1.0, 1.0, 1.0);
         double ri = rec.front_face ? (1.0/refraction_index) : refraction_index;
@@ -155,11 +156,11 @@ class mix : public material {
   public:
   mix(std::shared_ptr<material> a, std::shared_ptr<material> b, double val) : v(std::clamp(val, 0.0, 1.0)), matA(a), matB(b){}
 
-  bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
+  bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered, double& pdf) const override { 
     if(random_double() > v){
-      return matA->scatter(r_in, rec, attenuation, scattered);
+      return matA->scatter(r_in, rec, attenuation, scattered, pdf);
     } else {
-      return matB->scatter(r_in, rec, attenuation, scattered);
+      return matB->scatter(r_in, rec, attenuation, scattered, pdf);
     }
   }
 
@@ -176,11 +177,11 @@ class textureMix : public material {
   public:
   textureMix(std::shared_ptr<material> a, std::shared_ptr<material> b, std::shared_ptr<image_texture> texture) : tex(texture), matA(a), matB(b){}
 
-  bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override { 
+  bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered, double& pdf) const override { 
     if(random_double() > tex->alpha(rec.u, rec.v, rec.p)){
-      return matA->scatter(r_in, rec, attenuation, scattered);
+      return matA->scatter(r_in, rec, attenuation, scattered, pdf);
     } else {
-      return matB->scatter(r_in, rec, attenuation, scattered);
+      return matB->scatter(r_in, rec, attenuation, scattered, pdf);
     }
   }
 
@@ -193,7 +194,7 @@ class textureMix : public material {
 //debug materials
 class transparent : public material {
   public:
-  bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
+  bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered, double& pdf) const override {
     attenuation = color(1.0, 1.0, 1.0);
 
     scattered = ray(rec.p, r_in.direction(), r_in.time());
