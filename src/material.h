@@ -17,6 +17,10 @@ class material {
         return color(0,0,0);
     }
 
+    virtual double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered) const {
+        return 0;
+    }
+
     virtual bool rgb(const ray& r_in, const hit_record& rec, color& color) const {
       return false;
     }
@@ -33,7 +37,7 @@ class lambertian : public material {
 
     bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered)
     const override {
-        auto scatter_direction = rec.normal + random_unit_vector();
+        auto scatter_direction = random_on_hemisphere(rec.normal);
         
         // Catch degenerate scatter direction
         if (scatter_direction.near_zero()) {
@@ -45,6 +49,10 @@ class lambertian : public material {
         return true;
     } 
     
+    double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered) const override {
+        return 1 / (2*pi);
+      }
+
     bool scatter_normal(const ray& r_in, const hit_record& rec, color& normals, ray& scattered) const override 
     {
       normals = rec.normal;
