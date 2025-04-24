@@ -92,7 +92,7 @@ void bouncingSpheres() {
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.render(world);
+    //cam.render(world);
 }
 
 void checkeredSpheres() {
@@ -118,7 +118,7 @@ void checkeredSpheres() {
 
     cam.defocus_angle = 0;
 
-    cam.render(world);
+    //cam.render(world);
 }
 
 void texturedSphere() {
@@ -141,7 +141,7 @@ void texturedSphere() {
 
     cam.defocus_angle = 0;
 
-    cam.render(hittable_list(globe));
+    //cam.render(hittable_list(globe));
 }
 
 void planes() {
@@ -176,7 +176,7 @@ void planes() {
 
     cam.defocus_angle = 0;
 
-    cam.render(world);
+    //cam.render(world);
 }
 
 void transparency() {
@@ -201,7 +201,7 @@ void transparency() {
 
     cam.defocus_angle = 0;
 
-    cam.render(world);
+    //cam.render(world);
 }
 
 void mixMaterial(){
@@ -231,7 +231,7 @@ void mixMaterial(){
 
     cam.defocus_angle = 0;
 
-    cam.render(world);
+    //cam.render(world);
 }
 
 void imageTransparencyMapping(){
@@ -261,7 +261,7 @@ void imageTransparencyMapping(){
 
     cam.defocus_angle = 0;
 
-    cam.render(world);
+    //cam.render(world);
 }
 
 void simpleLight() {
@@ -288,7 +288,7 @@ void simpleLight() {
 
     cam.defocus_angle = 0;
 
-    cam.render(world);
+    //cam.render(world);
 }
 
 void unlit_sphere_scene(){
@@ -311,7 +311,7 @@ void unlit_sphere_scene(){
 
     cam.defocus_angle = 0;
 
-    cam.render(hittable_list(globe));
+    //cam.render(hittable_list(globe));
 }
 
 void cornellBox() {
@@ -344,11 +344,15 @@ void cornellBox() {
     box2 = std::make_shared<translate>(box2, vec3(130,0,65));
     world.add(box2);
 
+    // Light Sources
+    auto empty_material = std::shared_ptr<material>();
+    quad lights(point3(343,554,332), vec3(-130,0,0), vec3(0,0,-105), empty_material);
+
     camera cam;
 
     cam.aspect_ratio      = 1.0;
     cam.width             = 600;
-    cam.samples_per_pixel = 1000;
+    cam.samples_per_pixel = 10;
     cam.max_depth         = 50;
     cam.background        = color(0,0,0);
 
@@ -359,7 +363,7 @@ void cornellBox() {
 
     cam.defocus_angle = 0;
 
-    cam.render(world);
+    cam.render(world, lights);
 }
 
 void debug_cornellBox() {
@@ -439,7 +443,7 @@ void simple_shadow_example() {
 
     cam.defocus_angle = 0;
 
-    cam.render(world);
+    //cam.render(world);
     //cam.render_buffer(world);
 
     //cam.render_outline_buffer(world);
