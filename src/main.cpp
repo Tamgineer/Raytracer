@@ -26,6 +26,7 @@ enum scene {
         cornell_box,
         debug_cornell_box,
         simple_shadows,
+        unlit_scene,
     };
 
 void bouncingSpheres() {
@@ -290,6 +291,29 @@ void simpleLight() {
     cam.render(world);
 }
 
+void unlit_sphere_scene(){
+    auto sphere_texture = std::make_shared<image_texture>("images/avatar.png");
+    auto sphere_surface = std::make_shared<unlit>(sphere_texture);
+    auto globe = std::make_shared<sphere>(point3(0,0,0), 2, sphere_surface);
+
+    camera cam;
+
+    cam.aspect_ratio      = 16.0 / 16.0;
+    cam.width             = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+    cam.background        = color(0.70, 0.80, 1.00);
+
+    cam.vfov     = 20;
+    cam.lookfrom = point3(0,0,12);
+    cam.lookat   = point3(0,0,0);
+    cam.vup      = vec3(0,1,0);
+
+    cam.defocus_angle = 0;
+
+    cam.render(hittable_list(globe));
+}
+
 void cornellBox() {
     hittable_list world;
 
@@ -324,7 +348,7 @@ void cornellBox() {
 
     cam.aspect_ratio      = 1.0;
     cam.width             = 600;
-    cam.samples_per_pixel = 64;
+    cam.samples_per_pixel = 1000;
     cam.max_depth         = 50;
     cam.background        = color(0,0,0);
 
@@ -404,7 +428,7 @@ void simple_shadow_example() {
 
     cam.aspect_ratio      = 1.0;
     cam.width             = 300;
-    cam.samples_per_pixel = 1000;
+    cam.samples_per_pixel = 10;
     cam.max_depth         = 50;
     cam.background        = color(0,0,0);
 
@@ -435,6 +459,7 @@ int main() {
         case cornell_box             : cornellBox();               break;
         case debug_cornell_box       : debug_cornellBox();         break;
         case simple_shadows          : simple_shadow_example();    break;
+        case unlit_scene             : unlit_sphere_scene();              break;
     }
     
     return 0;

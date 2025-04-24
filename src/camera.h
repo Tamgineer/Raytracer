@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hittable.h"
+#include "pdf.h"
 #include "material.h"
 
 #ifdef _MSC_VER
@@ -267,7 +268,7 @@ class camera {
         ray scattered;
         color attenuation;
         double pdf_value;
-        color color_from_emission = rec.mat->emitted(rec.u, rec.v, rec.p);
+        color color_from_emission = rec.mat->emitted(r, rec, rec.u, rec.v, rec.p);
 
         if(rec.mat->rgb(r, rec, attenuation)){
             //depth = 0;
@@ -277,8 +278,11 @@ class camera {
         if (!rec.mat->scatter(r, rec, attenuation, scattered, pdf_value))
             return color_from_emission;
 
+        cosine_pdf surface_pdf(rec.normal);
+        scattered = ray(rec.p, surface_pdf.generate(), r.time());
+        pdf_value = surface_pdf.value(scattered.direction());
+
         double scattering_pdf = rec.mat->scattering_pdf(r, rec, scattered);
-        pdf_value = scattering_pdf;
 
         color color_from_scatter = (attenuation * scattering_pdf * ray_color(scattered, depth-1, world)) / pdf_value;
 

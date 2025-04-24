@@ -14,7 +14,7 @@ class material {
         return false;
     }
 
-    virtual color emitted(double u, double v, const point3& p) const {
+    virtual color emitted(const ray& r_in, const hit_record& rec, double u, double v, const point3& p) const {
         return color(0,0,0);
     }
 
@@ -138,7 +138,10 @@ class diffuse_light : public material {
     diffuse_light(std::shared_ptr<texture> tex) : tex(tex) {}
     diffuse_light(const color& emit) : tex(std::make_shared<solid_color>(emit)) {}
 
-    color emitted(double u, double v, const point3& p) const override {
+    color emitted(const ray& r_in, const hit_record& rec, double u, double v, const point3& p) const override {
+        if (!rec.front_face)
+            return color(0,0,0);
+
         return tex->value(u, v, p);
     }
 
@@ -205,7 +208,8 @@ class transparent : public material {
 
 class unlit : public material {
   public:
-  unlit(const color& albedo) : albedo(albedo){}
+  unlit(const color& albedo) : tex(std::make_shared<solid_color>(albedo)) {}
+  unlit(std::shared_ptr<texture> tex) : tex(tex) {}
 
   //bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
     //auto scatter_direction = rec.normal;
@@ -216,12 +220,13 @@ class unlit : public material {
   //}
 
   bool rgb(const ray& r_in, const hit_record& rec, color& color) const override { 
-    color = albedo;
+    color = tex->value(rec.u, rec.v, rec.p);
     return true;
   }
 
   private:
   color albedo;
+  std::shared_ptr<texture> tex;
 };
 
 class normalMat : public material {
