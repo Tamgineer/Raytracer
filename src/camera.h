@@ -277,6 +277,10 @@ class camera {
         if (!rec.mat->scatter(r, rec, srec))
             return color_from_emission;
 
+        if (srec.skip_pdf) {
+            return srec.attenuation * ray_color(srec.skip_pdf_ray, depth-1, world, lights);
+        }
+
         auto light_ptr = std::make_shared<hittable_pdf>(lights, rec.p);
         mixture_pdf p(light_ptr, srec.pdf_ptr);
 

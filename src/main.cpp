@@ -321,6 +321,7 @@ void cornellBox() {
     auto white = std::make_shared<lambertian>(color(.73, .73, .73));
     auto green = std::make_shared<lambertian>(color(.12, .45, .15));
     auto light = std::make_shared<diffuse_light>(color(15, 15, 15));
+    auto mirror = std::make_shared<metal>(color(0.8, 0.85, 0.88), 0.0);
 
     // Cornell box sides
     world.add(std::make_shared<quad>(point3(555,0,0), vec3(0,0,555), vec3(0,555,0), green));
@@ -333,7 +334,7 @@ void cornellBox() {
     world.add(std::make_shared<quad>(point3(213,554,227), vec3(130,0,0), vec3(0,0,105), light));
 
     // Box 1
-    std::shared_ptr<hittable> box1 = box(point3(0,0,0), point3(165,330,165), white);
+    std::shared_ptr<hittable> box1 = box(point3(0,0,0), point3(165,330,165), mirror);
     box1 = std::make_shared<rotate_y>(box1, 15);
     box1 = std::make_shared<translate>(box1, vec3(265,0,295));
     world.add(box1);
