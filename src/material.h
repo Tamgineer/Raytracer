@@ -80,7 +80,7 @@ class metal : public material {
         srec.skip_pdf = true;
         srec.skip_pdf_ray = ray(rec.p, reflected, r_in.time());
 
-        return false;
+        return true;
     }
 
 
