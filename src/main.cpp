@@ -351,8 +351,12 @@ void cornellBox() {
 
     // Light Sources
     auto empty_material = std::shared_ptr<material>();
-    quad lights(point3(343,554,332), vec3(-130,0,0), vec3(0,0,-105), empty_material);
-
+    hittable_list lights;
+    lights.add(
+        std::make_shared<quad>(point3(343,554,332), vec3(-130,0,0), vec3(0,0,-105), empty_material));
+        lights.add(std::make_shared<sphere>(point3(190, 90, 190), 90, empty_material)
+    );
+    
     camera cam;
 
     cam.aspect_ratio      = 1.0;
