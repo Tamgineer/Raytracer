@@ -314,6 +314,79 @@ void unlit_sphere_scene(){
     //cam.render(hittable_list(globe));
 }
 
+void cornellBox_brush() {
+    hittable_list world;
+
+    auto red   = std::make_shared<lambertian>(color(.65, .05, .05));
+    auto white = std::make_shared<lambertian>(color(.73, .73, .73));
+    auto green = std::make_shared<lambertian>(color(.12, .45, .15));
+    auto light = std::make_shared<diffuse_light>(color(15, 15, 15));
+    auto mirror = std::make_shared<metal>(color(0.8, 0.85, 0.88), 0.0);
+    auto glass = std::make_shared<dielectric>(1.5);
+    
+    // Cornell box sides
+    world.add(std::make_shared<quad>(point3(555,0,0), vec3(0,0,555), vec3(0,555,0), green));
+    world.add(std::make_shared<quad>(point3(0,0,555), vec3(0,0,-555), vec3(0,555,0), red));
+    world.add(std::make_shared<quad>(point3(0,555,0), vec3(555,0,0), vec3(0,0,555), white));
+    world.add(std::make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,0,-555), white));
+    world.add(std::make_shared<quad>(point3(555,0,555), vec3(-555,0,0), vec3(0,555,0), white));
+
+    // Light
+    world.add(std::make_shared<quad>(point3(213,554,227), vec3(130,0,0), vec3(0,0,105), light));
+
+    //auto surface_texture = std::make_shared<image_texture>("images/avatar.png");
+    //world.add(std::make_shared<quad>(point3(278, 278, 278), vec3(-55, 0, 0), vec3(0, 155, 0), std::make_shared<lambertian>(surface_texture)));
+
+    // Light Sources
+    auto empty_material = std::shared_ptr<material>();
+    hittable_list lights;
+    lights.add(
+        std::make_shared<quad>(point3(343,554,332), vec3(-130,0,0), vec3(0,0,-105), empty_material));
+        lights.add(std::make_shared<sphere>(point3(190, 90, 190), 90, empty_material)
+    );
+
+    
+    camera cam;
+    
+    cam.aspect_ratio      = 1.0;
+    cam.width             = 300;
+    cam.samples_per_pixel = 1000;
+    cam.max_depth         = 50;
+    cam.background        = color(0.2,0.2,0.2);
+    
+    cam.vfov     = 40;
+    cam.lookfrom = point3(278, 278, -800);
+    cam.lookat   = point3(278, 278, 0);
+    cam.vup      = vec3(0, 1, 0);
+    
+    cam.defocus_angle = 0;
+    
+    hittable_list finalScene;
+    //populate the scene with quads
+    for(int i = 0; i < 1000; i++){
+        ray r = ray(cam.lookfrom, random_unit_vector());
+        hit_record rec;
+        if(!world.hit(r, interval(0.001, infinity), rec, cam.lookfrom))
+        {
+            i--;
+            continue;
+        }
+
+        vec3 u = vec3(-1, 0, 0);
+        vec3 v = vec3(0, 1, 0);
+
+        //vec3 u = vec3(-rec.normal.x(),  rec.normal.y(), rec.normal.z());
+        //vec3 v = cross(rec.normal, u);
+
+        auto brushStroke = std::make_shared<quad>(rec.p - (u * 50) - (v * 50), u * 100, v * 100, std::make_shared<lambertian>(color(random_double(), random_double(), random_double())));
+        finalScene.add(brushStroke);
+    }
+    
+    finalScene.add(std::make_shared<quad>(point3(213,554,227), vec3(130,0,0), vec3(0,0,105), light));
+
+    cam.render(finalScene, lights);
+}
+
 void cornellBox() {
     hittable_list world;
 
@@ -460,20 +533,22 @@ void simple_shadow_example() {
 
 int main() { 
 
-    switch (cornell_box) {
-        case bouncing_spheres        : bouncingSpheres();          break;
-        case checkered_spheres       : checkeredSpheres();         break;
-        case textured_sphere         : texturedSphere();           break;
-        case untextures_planes       : planes();                   break;
-        case transparency_test       : transparency();             break;
-        case mix_mat_test            : mixMaterial();              break;
-        case image_transparency_test : imageTransparencyMapping(); break;
-        case simple_light            : simpleLight();              break;
-        case cornell_box             : cornellBox();               break;
-        case debug_cornell_box       : debug_cornellBox();         break;
-        case simple_shadows          : simple_shadow_example();    break;
-        case unlit_scene             : unlit_sphere_scene();              break;
-    }
+    cornellBox_brush();
+
+    //switch (cornell_box) {
+        //case bouncing_spheres        : bouncingSpheres();          break;
+        //case checkered_spheres       : checkeredSpheres();         break;
+        //case textured_sphere         : texturedSphere();           break;
+        //case untextures_planes       : planes();                   break;
+        //case transparency_test       : transparency();             break;
+        //case mix_mat_test            : mixMaterial();              break;
+        //case image_transparency_test : imageTransparencyMapping(); break;
+        //case simple_light            : simpleLight();              break;
+        //case cornell_box             : cornellBox();               break;
+        //case debug_cornell_box       : debug_cornellBox();         break;
+        //case simple_shadows          : simple_shadow_example();    break;
+        //case unlit_scene             : unlit_sphere_scene();       break;
+    //}
     
     return 0;
 
