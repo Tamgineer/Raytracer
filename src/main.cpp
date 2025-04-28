@@ -391,7 +391,7 @@ void simple_shadow_example() {
     auto green = std::make_shared<lambertian>(color(.12, .45, .15));
     auto light = std::make_shared<diffuse_light>(color(15, 15, 15));
 
-    //auto cel   = std::make_shared<fakeShadows>(color(0, .5, .5), point3(343, 554, 332));
+    auto cel   = std::make_shared<fakeShadows>(color(0, .5, .5), point3(343, 554, 332));
 
     world.add(std::make_shared<quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), green));
     world.add(std::make_shared<quad>(point3(0,0,0), vec3(0,555,0), vec3(0,0,555), red));
@@ -400,7 +400,7 @@ void simple_shadow_example() {
     world.add(std::make_shared<quad>(point3(555,555,555), vec3(-555,0,0), vec3(0,0,-555), white));
     world.add(std::make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), white));
 
-    world.add(std::make_shared<sphere>(point3(278, 278, 400), 70, white)); 
+    world.add(std::make_shared<sphere>(point3(278, 278, 400), 70, cel)); 
 
     camera cam;
 
