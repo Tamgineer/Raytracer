@@ -26,6 +26,7 @@ enum scene {
         cornell_box,
         debug_cornell_box,
         simple_shadows,
+        outline_materials
     };
 
 void bouncingSpheres() {
@@ -423,9 +424,56 @@ void simple_shadow_example() {
     //cam.render_outline_buffer(world);
 }
 
+void outlines_and_materials(){
+    hittable_list world;
+
+    auto red   = std::make_shared<lambertian>(color(.65, .05, .05));
+    auto white = std::make_shared<lambertian>(color(.73, .73, .73));
+    auto green = std::make_shared<lambertian>(color(.12, .45, .15));
+    auto light = std::make_shared<diffuse_light>(color(15, 15, 15));
+
+    auto mirror = std::make_shared<metal>(color(1), 0);
+
+    world.add(std::make_shared<quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), green));
+    world.add(std::make_shared<quad>(point3(0,0,0), vec3(0,555,0), vec3(0,0,555), red));
+    world.add(std::make_shared<quad>(point3(343, 554, 332), vec3(-130,0,0), vec3(0,0,-105), light));
+    world.add(std::make_shared<quad>(point3(0,0,0), vec3(555,0,0), vec3(0,0,555), white));
+    world.add(std::make_shared<quad>(point3(555,555,555), vec3(-555,0,0), vec3(0,0,-555), white));
+    world.add(std::make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), white));
+
+    world.add(std::make_shared<sphere>(point3(130, 50, 65), 50, white));
+
+    std::shared_ptr<hittable> box1 = box(point3(0,0,0), point3(165,330,165), mirror);
+    box1 = std::make_shared<rotate_y>(box1, 15);
+    box1 = std::make_shared<translate>(box1, vec3(265,0,295));
+    world.add(box1);
+
+    std::shared_ptr<hittable> box2 = box(point3(0,0,0), point3(165,165,165), white);
+    box2 = std::make_shared<rotate_y>(box2, -18);
+    box2 = std::make_shared<translate>(box2, vec3(130,0,65));
+    world.add(box2);
+
+    camera cam;
+
+    cam.aspect_ratio      = 1.0;
+    cam.width             = 600;
+    cam.samples_per_pixel = 600;
+    cam.max_depth         = 50;
+    cam.background        = color(0,0,0);
+
+    cam.vfov     = 40;
+    cam.lookfrom = point3(278, 278, -800);
+    cam.lookat   = point3(278, 278, 0);
+    cam.vup      = vec3(0,1,0);
+
+    cam.defocus_angle = 0;
+
+    cam.render(world, true);
+}
+
 int main() { 
 
-    switch (simple_shadows) {
+    switch (outline_materials) {
         case bouncing_spheres        : bouncingSpheres();          break;
         case checkered_spheres       : checkeredSpheres();         break;
         case textured_sphere         : texturedSphere();           break;
@@ -437,6 +485,7 @@ int main() {
         case cornell_box             : cornellBox();               break;
         case debug_cornell_box       : debug_cornellBox();         break;
         case simple_shadows          : simple_shadow_example();    break;
+        case outline_materials       : outlines_and_materials();   break;
     }
     
     return 0;

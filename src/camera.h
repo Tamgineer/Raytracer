@@ -49,7 +49,7 @@ class camera {
         delete[] outline_buffer;
     }
 
-    void render(const hittable& world) {
+    void render(const hittable& world, bool enableOutlines = false) {
         initialize();
         
         pixels = new uint8_t[width * height * CHANNEL_NUM];
@@ -73,8 +73,17 @@ class camera {
     
         std::clog << "\rImage done...                                             \n";
 
+        if(enableOutlines){
+            render_outline_buffer(world, true);
+            for(int i = 0; i < (width * height * CHANNEL_NUM); i++){
+                if(outline_buffer[i] > 0){
+                    pixels[i] = 0;
+                }
+            }    
+        }
+
         // if CHANNEL_NUM is 4, you can use alpha channel in png
-        stbi_write_png("image.png", width, height, CHANNEL_NUM, pixels, width * CHANNEL_NUM);
+        stbi_write_png("image.png", width, height, CHANNEL_NUM, pixels, width * CHANNEL_NUM); 
 
         delete[] pixels;
 
@@ -117,7 +126,7 @@ class camera {
 
     }
 
-    void render_outline_buffer(const hittable& world) {
+    void render_outline_buffer(const hittable& world, bool keepBuffer = false) {
         initialize();
         
         outline_buffer = new uint8_t[width * height * CHANNEL_NUM];
@@ -192,10 +201,10 @@ class camera {
 
         // if CHANNEL_NUM is 4, you can use alpha channel in png
         stbi_write_png("outlines.png", width, height, CHANNEL_NUM, outline_buffer, width * CHANNEL_NUM);
-
-        delete[] outline_buffer;
-
         
+        if(keepBuffer) return;
+        
+        delete[] outline_buffer;
     }
 
   private:
