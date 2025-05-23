@@ -252,7 +252,7 @@ class fakeShadows : public material {
   fakeShadows(const color& albedo, const point3& lightPos) : albedo(albedo), lightPos(lightPos){}
   
   bool rgb(const ray& r_in, const hit_record& rec, color& color) const override {
-    color = dot(unit_vector(r_in.direction()), unit_vector(rec.p - lightPos)) > 0.1 ? albedo : albedo * 0.5;
+    color = dot(unit_vector(r_in.direction()), unit_vector(rec.p - lightPos)) < 0.1 ? albedo : albedo * 0.5;
     
     return true;
   }

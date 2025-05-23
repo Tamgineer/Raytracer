@@ -9,6 +9,7 @@
 #include "material.h"
 #include "sphere.h"
 #include "quad.h"
+#include "triangle.h"
 #include "bvh.h"
 #include "texture.h"
 
@@ -435,7 +436,9 @@ void painterly_scene() {
     auto mirror = std::make_shared<metal>(color(0.8, 0.85, 0.88), 0.0);
     auto glass = std::make_shared<dielectric>(1.5); 
     
-    world.add(std::make_shared<sphere>(point3(278, 278, 400), 70, white));
+    auto hsv = std::make_shared<unlit>(hsv2rgb(157, 73, 96));
+
+    world.add(std::make_shared<sphere>(point3(278, 278, 400), 150, white));
 
     camera cam;
     
@@ -454,7 +457,7 @@ void painterly_scene() {
     
     hittable_list finalScene;
     //populate the scene with quads
-    for(int i = 0; i < 1000; i++){
+    for(int i = 0; i < 150; i++){
         ray r = ray(cam.lookfrom, random_unit_vector());
         hit_record rec;
         if(!world.hit(r, interval(0.001, infinity), rec, cam.lookfrom))
@@ -463,15 +466,19 @@ void painterly_scene() {
             continue;
         }
 
-        vec3 u = vec3(-1, 0, 0);
-        vec3 v = vec3(0, 1, 0);
+        vec3 up = std::fabs(rec.normal.z()) > 0.999 ? vec3(0, 0, 1) : vec3(0, 1, 0);
+        
+        // U is orthog to N
+        vec3 u = unit_vector(cross(rec.normal, up));
 
-        //vec3 u = vec3(-rec.normal.x(),  rec.normal.y(), rec.normal.z());
-        //vec3 v = cross(rec.normal, u);
+        //V is orthog to both N and U
+        vec3 v = unit_vector(cross(rec.normal, u));
+
         auto imageTex   = std::make_shared<image_texture>("images/brush.png");
-        auto mixedTex   = std::make_shared<textureMix>(std::make_shared<transparent>(), std::make_shared<unlit>(color(random_double(), random_double(), random_double())), imageTex);
+        auto mixedTex   = std::make_shared<textureMix>(std::make_shared<transparent>(), std::make_shared<lambertian>(color(random_double(), random_double(), random_double())), imageTex);
 
         auto brushStroke = std::make_shared<quad>(rec.p - (u * 50) - (v * 50), u * 100, v * 100, mixedTex);
+
         finalScene.add(brushStroke);
     }
     
@@ -481,6 +488,8 @@ void painterly_scene() {
     finalScene.add(std::make_shared<quad>(point3(0,555,0), vec3(555,0,0), vec3(0,0,555), white));
     finalScene.add(std::make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,0,-555), white));
     finalScene.add(std::make_shared<quad>(point3(555,0,555), vec3(-555,0,0), vec3(0,555,0), white));
+
+    finalScene.add(std::make_shared<sphere>(point3(278, 278, 400), 150, white));
 
     finalScene.add(std::make_shared<quad>(point3(213,554,227), vec3(130,0,0), vec3(0,0,105), light));
 
@@ -495,6 +504,8 @@ void outlines_and_materials(){
     auto green = std::make_shared<lambertian>(color(.12, .45, .15));
     auto light = std::make_shared<diffuse_light>(color(15, 15, 15));
 
+    auto debug = std::make_shared<unlit>(color(0.5, 0, 0.5));
+
     auto mirror = std::make_shared<metal>(color(1), 0);
 
     world.add(std::make_shared<quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), green));
@@ -504,23 +515,32 @@ void outlines_and_materials(){
     world.add(std::make_shared<quad>(point3(555,555,555), vec3(-555,0,0), vec3(0,0,-555), white));
     world.add(std::make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), white));
 
-    world.add(std::make_shared<sphere>(point3(130, 50, 65), 50, white));
+    //world.add(std::make_shared<sphere>(point3(130, 50, 65), 50, white));
 
     std::shared_ptr<hittable> box1 = box(point3(0,0,0), point3(165,330,165), mirror);
     box1 = std::make_shared<rotate_y>(box1, 15);
     box1 = std::make_shared<translate>(box1, vec3(265,0,295));
-    world.add(box1);
+    //world.add(box1);
+
+    world.add(std::make_shared<tri>(
+        vec3(200, 278, 200), 
+        vec3(278, 400, 200), 
+        vec3(400, 278, 200), 
+        vec3(0, 0, -1), 
+        vec3(0, 0, -1), 
+        vec3(0, 0, -1), 
+        debug));
 
     std::shared_ptr<hittable> box2 = box(point3(0,0,0), point3(165,165,165), white);
     box2 = std::make_shared<rotate_y>(box2, -18);
     box2 = std::make_shared<translate>(box2, vec3(130,0,65));
-    world.add(box2);
+    //world.add(box2);
 
     camera cam;
 
     cam.aspect_ratio      = 1.0;
     cam.width             = 600;
-    cam.samples_per_pixel = 600;
+    cam.samples_per_pixel = 100;
     cam.max_depth         = 50;
     cam.background        = color(0,0,0);
 
@@ -531,12 +551,12 @@ void outlines_and_materials(){
 
     cam.defocus_angle = 0;
 
-    cam.render(world, true);
+    cam.render(world, false);
 }
 
 int main() { 
 
-    switch (painterly) {
+    switch (simple_shadows) {
         case bouncing_spheres        : bouncingSpheres();          break;
         case checkered_spheres       : checkeredSpheres();         break;
         case textured_sphere         : texturedSphere();           break;
